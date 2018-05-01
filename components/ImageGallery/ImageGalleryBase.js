@@ -1,43 +1,37 @@
-import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import PropTypes from 'prop-types'
+import React, { Component } from 'react'
 
-import _ from 'lodash';
+import _ from 'lodash'
 
-import {
-  View,
-  HorizontalPager,
-  LoadingIndicator,
-  Image,
-} from '../../index';
+import { View, HorizontalPager, LoadingIndicator, Image } from '../../index'
 
-
-const IMAGE_PREVIEW_MODE = 'imagePreview';
-const IMAGE_GALLERY_MODE = 'gallery';
+const IMAGE_PREVIEW_MODE = 'imagePreview'
+const IMAGE_GALLERY_MODE = 'gallery'
 
 export class ImageGalleryBase extends Component {
   /**
    * The image preview mode is the mode in which
    * the user can zoom in/out and pan the image around.
    */
-  static IMAGE_PREVIEW_MODE = IMAGE_PREVIEW_MODE;
+  static IMAGE_PREVIEW_MODE = IMAGE_PREVIEW_MODE
 
   /**
    * The gallery mode is the mode in which
    * the user can scroll between images, and can see
    * additional info about each image.
    */
-  static IMAGE_GALLERY_MODE = IMAGE_GALLERY_MODE;
+  static IMAGE_GALLERY_MODE = IMAGE_GALLERY_MODE
 
   static propTypes = {
     // Array containing objects with gallery data (shape defined below)
     data: PropTypes.arrayOf(
       PropTypes.shape({
         source: PropTypes.shape({
-          uri: PropTypes.string,
+          uri: PropTypes.string
         }),
         description: PropTypes.string,
-        title: PropTypes.string,
-      }),
+        title: PropTypes.string
+      })
     ).isRequired,
     // Callback function called when user swipes between pages (images)
     // Index of new (selected) page is passed to this callback
@@ -61,63 +55,66 @@ export class ImageGalleryBase extends Component {
     renderImageOverlay: PropTypes.func,
     // Callback function that can be used to define placeholder
     // that appears when content is loading
-    renderPlaceholder: PropTypes.func,
-  };
+    renderPlaceholder: PropTypes.func
+  }
 
   static defaultProps = {
     selectedIndex: 0,
     showNextPage: false,
-    renderPlaceholder: () => <LoadingIndicator />,
-  };
+    renderPlaceholder: () => <LoadingIndicator />
+  }
 
   constructor(props) {
-    super(props);
-    this.renderPage = this.renderPage.bind(this);
-    this.onIndexSelected = this.onIndexSelected.bind(this);
-    this.onImageTap = this.onImageTap.bind(this);
+    super(props)
+    this.renderPage = this.renderPage.bind(this)
+    this.onIndexSelected = this.onIndexSelected.bind(this)
+    this.onImageTap = this.onImageTap.bind(this)
 
     this.state = {
       selectedIndex: this.props.selectedIndex || 0,
       imageSwitchingEnabled: true,
       collapsed: true,
-      mode: IMAGE_GALLERY_MODE,
-    };
+      mode: IMAGE_GALLERY_MODE
+    }
   }
 
   onImageTap() {
-    const { mode } = this.state;
+    const { mode } = this.state
 
     // We are toggling between image preview and
     // gallery modes when the user taps on an image.
     if (mode === IMAGE_PREVIEW_MODE) {
-      this.setMode(IMAGE_GALLERY_MODE);
+      this.setMode(IMAGE_GALLERY_MODE)
     } else {
-      this.setMode(IMAGE_PREVIEW_MODE);
+      this.setMode(IMAGE_PREVIEW_MODE)
     }
   }
 
   onIndexSelected(newIndex) {
-    const { onIndexSelected } = this.props;
-    this.setState({
-      selectedIndex: newIndex,
-    }, () => {
-      if (_.isFunction(onIndexSelected)) {
-        onIndexSelected(newIndex);
+    const { onIndexSelected } = this.props
+    this.setState(
+      {
+        selectedIndex: newIndex
+      },
+      () => {
+        if (_.isFunction(onIndexSelected)) {
+          onIndexSelected(newIndex)
+        }
       }
-    });
+    )
   }
 
   setMode(mode) {
-    const { onModeChanged } = this.props;
+    const { onModeChanged } = this.props
     if (this.state.mode === mode) {
-      return;
+      return
     }
 
     this.setState({ mode }, () => {
       if (_.isFunction(onModeChanged)) {
-        onModeChanged(mode);
+        onModeChanged(mode)
       }
-    });
+    })
   }
 
   renderImage() {
@@ -125,52 +122,47 @@ export class ImageGalleryBase extends Component {
   }
 
   renderPage(pageData, pageIndex) {
-    const { mode, selectedIndex } = this.state;
-    const { style, renderImageOverlay } = this.props;
-    const image = _.get(pageData, 'source.uri');
+    const { mode, selectedIndex } = this.state
+    const { style, renderImageOverlay } = this.props
+    const image = _.get(pageData, 'source.uri')
 
     if (!image) {
-      return null;
+      return null
     }
 
-    const isImageVisible = (pageIndex === selectedIndex);
-    const transformImageProps = Image.getPropsTransformer();
+    const isImageVisible = pageIndex === selectedIndex
+    const transformImageProps = Image.getPropsTransformer()
     const imageProps = {
       source: { uri: image },
-      style: { flex: 1 },
-    };
-    const transformedImageProps = _.isFunction(transformImageProps) ?
-      transformImageProps(imageProps) :
-      imageProps;
+      style: { flex: 1 }
+    }
+    const transformedImageProps = _.isFunction(transformImageProps)
+      ? transformImageProps(imageProps)
+      : imageProps
 
-    const showOverlay = _.isFunction(renderImageOverlay) &&
+    const showOverlay =
+      _.isFunction(renderImageOverlay) &&
       // Nothing should be rendered above an image if the user is in
       // the preview mode (pinching, and panning the image).
-      (mode !== IMAGE_PREVIEW_MODE) &&
+      mode !== IMAGE_PREVIEW_MODE &&
       // We are not rendering overlays above images that are not visible
-      isImageVisible;
-    const overlay = showOverlay && renderImageOverlay(pageData, pageIndex);
+      isImageVisible
+    const overlay = showOverlay && renderImageOverlay(pageData, pageIndex)
 
     return (
-      <View
-        key={pageIndex}
-        style={style.page}
-      >
+      <View key={pageIndex} style={style.page}>
         {this.renderImage(transformedImageProps, pageData, pageIndex)}
         {overlay}
       </View>
-    );
+    )
   }
 
   render() {
-    const { data, renderOverlay, renderPlaceholder, style } = this.props;
-    const { selectedIndex, imageSwitchingEnabled } = this.state;
+    const { data, renderOverlay, renderPlaceholder, style } = this.props
+    const { selectedIndex, imageSwitchingEnabled } = this.state
 
     return (
-      <View
-        style={style.container}
-        driver={this.timingDriver}
-      >
+      <View style={style.container} driver={this.timingDriver}>
         <HorizontalPager
           data={data}
           onIndexSelected={this.onIndexSelected}
@@ -184,6 +176,6 @@ export class ImageGalleryBase extends Component {
           scrollEnabled={imageSwitchingEnabled}
         />
       </View>
-    );
+    )
   }
 }
