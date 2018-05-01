@@ -2458,12 +2458,6 @@ export default (variables = defaultThemeVariables) => ({
     flex: 0
   },
 
-  'shoutem.ui.LinearGradient': {
-    '.fill-parent': {
-      [INCLUDE]: ['fillParent']
-    }
-  },
-
   'shoutem.ui.Lightbox': {
     'shoutem.ui.Image': {
       '.preview': {
